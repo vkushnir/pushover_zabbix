@@ -1,12 +1,14 @@
 # Pushover for Zabbix
 Send notification from Zabbix to Pushover.
+Based on Josh Watts pushover.sh https://github.com/jnwatts/pushover.sh
+
 Just put some tags in message body.
 
 %PUSHOVER%TOKEN%      Application API Token [azGDORePK8gMaC0QOYAMyEEuzJnyUi]
 %PUSHOVER%USER%       User Identifier       [uQiRzpo4DXghDmr9QzzfQu27cmVRsG]
 %PUSHOVER%DEVICE%     User Device Name      [iphone,nexus5]
 %PUSHOVER%TITLE%      Message Title
-%PUSHOVER%PRIORITY%   Message Priority      [-2/-1/0/1/2]
+%PUSHOVER%PRIORITY%   Message Priority      [-2:(Information)/-1:(Warning)/0:(Average)/1:(High)/2:(Disaster)]
 %PUSHOVER%SOUND%      Notification Sound    [pushover/bike/bugle/cashregister/classical/cosmic/falling/gamelan/incoming/intermission/magic/mechanical/pianobar/siren/spacealarm/tugboat/alien/climb/persistent/echo/updown/none]
 %PUSHOVER%RETRY%      Number of trys (required for Emergency Priority (2))
 %PUSHOVER%EXPIRE%     Seconds for wait (required for Emergency Priority (2))
