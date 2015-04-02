@@ -1,21 +1,13 @@
 #!/bin/bash
 
-#set -x
+set -x
 
 # Defult Values
 PTOKEN="aQ2bKJVKMHf62a1RBUaSV8TRYPdAeG"
 PUSER=""
 PDEVICE=""
-PTITLE="Zabbix alerter processes more than 75% busy"
-PMESSAGE=$(cat <<EOT
-Status: <b>PROBLEM</b>
-%PUSHOVER%HTML%0
-%PUSHOVER%PRIORITY%High
-%PUSHOVER%URL_TITLE%Original event ID: 1077780
-%PUSHOVER%URL%http://www.monitor.skytelecom.kz/tr_events.php?triggerid=13485&eventid=1077123&sid=750a37192495410c
-Zabbix busy alerter processes, in % (Zabbix server:zabbix[process,alerter,avg,busy]): 100%
-EOT
-)
+PTITLE=""
+PMESSAGE=""
 PPRIORITY=""	# -2
 PSOUND=""
 PRETRY=""	# 2
@@ -34,9 +26,12 @@ PUSHOVER_URL="https://api.pushover.net/1/messages.json"
 REGEX="/^%PUSHOVER%[A-Z]+%.*$/p"
 
 # Get CMD Parameters
-CUSER=$1 
+CUSER=$(echo $1 | cut -f1 -d'@')
+CDEVICE=$(echo $1 | cut -f2 -d'@')
+CTOKEN=$(echo $1 | cut -f3 -d'@')
 CTITLE=$2 
 CMESSAGE=$3
+
 
 # Functions
 
@@ -52,10 +47,9 @@ opt_field() {
 validate_token() {
 	field="${1}"
 	value="${2}"
-	opt="${3}"
 	ret=1
 	if [ -z "${value}" ]; then
-		echo "${field} is unset or empty: Did you create ${CONFIG_FILE} or specify ${opt} on the command line?" >&2
+		echo "${field} is unset or empty: Did you specify ${field} on the command line?" >&2
 	elif ! echo "${value}" | egrep -q '[A-Za-z0-9]{30}'; then
 		echo "Value of ${field}, \"${value}\", does not match expected format. Should be 30 characters of A-Z, a-z and 0-9." >&2;
 	else
@@ -63,7 +57,7 @@ validate_token() {
 	fi
 	return ${ret}
 }
-set -x
+
 severity_to_priority() {
 local	priority=-2
 local	severity="${1}"
@@ -76,6 +70,29 @@ local	severity="${1}"
 		Disaster)	priority=2; PRETRY="2"; PEXPIRE="60" ;;
 	esac
 	echo $priority
+}
+
+set_field() {
+local	field="${1}"
+local	value="${2}"
+	case $field in
+		TOKEN)          PTOKEN=$value;
+				validate_token "TOKEN" "${PTOKEN}" || exit $? ;;
+		USER)		PUSER=$value
+				validate_token "USER" "${USER}" || exit $? ;;
+		DEVICE)		PDEVICE=$value ;;
+		TITLE)		PTITLE=$value ;;
+		PRIORITY)	PPRIORITY=$(severity_to_priority "$value");
+				if [ $PPRIORITY -ge 2 ]; then PRETRY=600; PEXPIRE=3600; fi ;;
+		SOUND)		PSOUND=$value ;;
+		RETRY)		PRETRY=$value ;;
+		EXPIRE)		PEXPIRE=$value ;;
+		URL)		PURL=$value ;;
+		URL_TITLE)	PURL_TITLE=$value ;;
+		TIMESTAMP)	PTIMESTAMP=$value ;;
+		CALLBACK)	PCALLBACK=$value ;;
+		HTML)		PHTML=$value ;;
+	esac
 }
 
 send_message() {
@@ -112,6 +129,8 @@ send_message() {
 
 
 if [ -z "$PUSER" ]; then PUSER=$CUSER; fi
+if [ -z "$PDEVICE" ] && [ -n "$CDEVICE" ]; then PDEVICE=$CDEVICE; fi
+if [ -z "$PTOKEN" ] && [ -n "$CTOKEN" ]; then PTOKEN=$CTOKEN; fi
 if [ -z "$PTITLE" ]; then PTITLE=$CTITLE; fi
 if [ -z "$PMESSAGE" ]; then PMESSAGE=$CMESSAGE; fi
 
@@ -125,21 +144,7 @@ for PL in ${POPTS}
 do
 	OPT=$(echo $PL | cut -f3 -d'%')
 	VAL=$(echo $PL | cut -f4 -d'%')
-	case $OPT in
-		TOKEN)		PTOKEN=$VAL ;;
-		USER)		PUSER=$VAL ;;
-		DEVICE)		PDEVICE=$VAL ;;
-		TITLE)		PTITLE=$VAL ;;
-		PRIORITY)	PPRIORITY=$(severity_to_priority "$VAL") ;;
-		SOUND)		PSOUND=$VAL ;;
-		RETRY)		PRETRY=$VAL ;;
-		EXPIRE)		PEXPIRE=$VAL ;;
-		URL)		PURL=$VAL ;;
-		URL_TITLE)	PURL_TITLE=$VAL ;;
-		TIMESTAMP)	PTIMESTAMP=$VAL ;;
-		CALLBACK)	PCALLBACK=$VAL ;;
-		HTML)		PHTML=$VAL ;;
-	esac
+	set_field "$OPT" "$VAL"
 done
 IFS=$OLDIFS
 
