@@ -1,9 +1,7 @@
 #!/bin/bash
 
-set -x
-
 # Defult Values
-PTOKEN="aQ2bKJVKMHf62a1RBUaSV8TRYPdAeG"
+PTOKEN=""
 PUSER=""
 PDEVICE=""
 PTITLE=""
@@ -23,7 +21,6 @@ ZASPATH=/usr/lib/zabbix/alertscripts
 CURL="$(which curl)"
 CURL_OPTS=""
 PUSHOVER_URL="https://api.pushover.net/1/messages.json"
-REGEX="/^%PUSHOVER%[A-Z]+%.*$/p"
 
 # Get CMD Parameters
 CUSER=$(echo $1 | cut -f1 -d'@')
@@ -136,7 +133,7 @@ if [ -z "$PMESSAGE" ]; then PMESSAGE=$CMESSAGE; fi
 
 # Cut pushover rows from Message
 POPTS=$(echo "${PMESSAGE}" | grep -i %PUSHOVER%)
-PMESSAGE=$(echo "${PMESSAGE}" | grep -iv PUSHOVER%)
+PMESSAGE=$(echo "${PMESSAGE}" | grep -iv %PUSHOVER%)
 
 OLDIFS=$IFS
 IFS=$'\n'

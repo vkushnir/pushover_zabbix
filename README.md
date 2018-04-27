@@ -9,7 +9,8 @@ Zabbix run alert script with 3 parameters **TO:**, **TITLE** and **MESSAGE**:
 **TITLE**: Just title for pushover message
 **MESSAGE**: Message text with pushover tags.
 
-##List of supported tags in message body: **(all tags caqn overwrite **TO:**, **TITLE** values)
+##List of supported tags in message body: 
+**(all tags in message body can overwrite **TO:**, **TITLE** values)
 * **%PUSHOVER%TOKEN%**      Application API Token [azGDORePK8gMaC0QOYAMyEEuzJnyUi]
 * **%PUSHOVER%USER%**       User Identifier       [uQiRzpo4DXghDmr9QzzfQu27cmVRsG]
 * **%PUSHOVER%DEVICE%**     User Device Name      [iphone,nexus5]
